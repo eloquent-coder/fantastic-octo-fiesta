@@ -1,0 +1,35 @@
+services:
+  dbt:
+    build:
+      context: .
+      dockerfile: dbt_project/Dockerfile
+    volumes:
+      - dbt-data:/app/data
+    environment:
+      - DBT_PROFILES_DIR=/app
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - dbt-data:/app/data
+    depends_on:
+      dbt:
+        condition: service_completed_successfully
+    environment:
+      - DUCKDB_PATH=/app/data/invoice_ledger.duckdb
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+volumes:
+  dbt-data:

@@ -1,0 +1,7 @@
+invoice_ledger:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: /app/data/invoice_ledger.duckdb
+      threads: 1
