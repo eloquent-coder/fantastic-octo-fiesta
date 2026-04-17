@@ -73,7 +73,7 @@ Safe to run `docker compose up` repeatedly — the dbt container skips the build
 
 Full model-level lineage as rendered by `dbt docs`. Each column in the diagram is one stage — seeds on the left, staging views, intermediate aggregations/joins, the mart, and the two singular audit tests attached to the mart.
 
-![dbt DAG](docs/dbt-dag.png)
+![dbt DAG](image.png)
 
 *Browse this interactively at http://localhost:8080 — click any node to see its SQL, columns, tests, and upstream/downstream deps.*
 
