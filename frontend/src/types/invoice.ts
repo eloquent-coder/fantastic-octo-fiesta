@@ -1,5 +1,7 @@
 export type InvoiceStatus = "draft" | "sent" | "overdue";
 
+export const INVOICE_STATUSES: readonly InvoiceStatus[] = ["draft", "sent", "overdue"];
+
 export interface Invoice {
   invoice_id: string;
   customer_id: string;

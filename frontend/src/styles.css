@@ -9,7 +9,7 @@ body {
 }
 
 main {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 2rem 1.5rem;
 }
@@ -19,11 +19,64 @@ h1 {
   font-size: 1.75rem;
 }
 
+/* Filters */
+.filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.75rem;
+  align-items: end;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: white;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.filters label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.8rem;
+  color: #555;
+}
+
+.filters input,
+.filters select {
+  padding: 0.45rem 0.55rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  background: white;
+}
+
+.filters input:focus,
+.filters select:focus {
+  outline: none;
+  border-color: #0066cc;
+  box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.15);
+}
+
+.filters .reset {
+  padding: 0.5rem 0.75rem;
+  background: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.filters .reset:hover {
+  background: #e6e6e6;
+}
+
+/* Table */
 table {
   border-collapse: collapse;
   width: 100%;
   background: white;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  border-radius: 6px;
+  overflow: hidden;
 }
 
 th,
@@ -37,6 +90,7 @@ td {
 th {
   background: #f5f5f5;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 td.numeric {
@@ -50,6 +104,61 @@ tr[data-status="overdue"] td {
 
 tr[data-status="draft"] td {
   color: #888;
+}
+
+/* Sortable headers */
+.sort-header {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  color: inherit;
+  text-align: left;
+  width: 100%;
+}
+
+.sort-header:hover {
+  color: #0066cc;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.pagination button {
+  padding: 0.4rem 0.8rem;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.pagination button:hover:not(:disabled) {
+  background: #f0f0f0;
+}
+
+.pagination button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Misc */
+.summary {
+  color: #666;
+  font-size: 0.85rem;
+  margin-top: 1rem;
+  text-align: center;
 }
 
 .error {
