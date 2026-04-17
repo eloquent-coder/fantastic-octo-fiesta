@@ -1,5 +1,7 @@
 import type { Invoice } from "../types/invoice";
+import { formatCurrency, formatDate } from "../utils/format";
 import type { InvoiceSort, SortableColumn } from "../utils/invoiceView";
+import { StatusBadge } from "./StatusBadge";
 
 interface Props {
   invoices: Invoice[];
@@ -28,7 +30,11 @@ const COLUMNS: readonly Column[] = [
 
 export function InvoiceList({ invoices, sort, onSortChange }: Props) {
   if (invoices.length === 0) {
-    return <p>No invoices match the current filters.</p>;
+    return (
+      <div className="empty-state">
+        <p>No invoices match the current filters.</p>
+      </div>
+    );
   }
 
   const toggleSort = (column: SortableColumn) => {
@@ -40,48 +46,67 @@ export function InvoiceList({ invoices, sort, onSortChange }: Props) {
   };
 
   return (
-    <table>
-      <thead>
-        <tr>
-          {COLUMNS.map((col) => {
-            if (col.key === null) {
-              return <th key={col.label}>{col.label}</th>;
-            }
-            const isSorted = sort.column === col.key;
-            const arrow = isSorted ? (sort.direction === "asc" ? " ↑" : " ↓") : "";
-            const columnKey = col.key;
+    <div className="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            {COLUMNS.map((col) => {
+              if (col.key === null) {
+                return (
+                  <th key={col.label} className={col.numeric ? "numeric" : undefined}>
+                    {col.label}
+                  </th>
+                );
+              }
+              const isSorted = sort.column === col.key;
+              const arrow = isSorted ? (sort.direction === "asc" ? "↑" : "↓") : "";
+              const columnKey = col.key;
+              return (
+                <th key={columnKey} className={col.numeric ? "numeric" : undefined}>
+                  <button
+                    type="button"
+                    className={`sort-header${isSorted ? " active" : ""}`}
+                    onClick={() => toggleSort(columnKey)}
+                    aria-sort={
+                      isSorted ? (sort.direction === "asc" ? "ascending" : "descending") : "none"
+                    }
+                  >
+                    <span>{col.label}</span>
+                    {arrow && <span className="sort-arrow">{arrow}</span>}
+                  </button>
+                </th>
+              );
+            })}
+          </tr>
+        </thead>
+        <tbody>
+          {invoices.map((invoice) => {
+            const hasBalance = Number(invoice.balance_due) > 0;
             return (
-              <th key={columnKey}>
-                <button
-                  type="button"
-                  className="sort-header"
-                  onClick={() => toggleSort(columnKey)}
-                  aria-sort={isSorted ? (sort.direction === "asc" ? "ascending" : "descending") : "none"}
-                >
-                  {col.label}
-                  {arrow}
-                </button>
-              </th>
+              <tr key={invoice.invoice_id} data-status={invoice.status}>
+                <td className="mono">{invoice.invoice_id}</td>
+                <td>
+                  <div className="customer">
+                    <span className="customer-name">{invoice.customer_name}</span>
+                  </div>
+                </td>
+                <td className="muted">{invoice.customer_email}</td>
+                <td>{invoice.country}</td>
+                <td>
+                  <StatusBadge status={invoice.status} />
+                </td>
+                <td>{formatDate(invoice.invoice_date)}</td>
+                <td>{formatDate(invoice.due_date)}</td>
+                <td className="numeric">{formatCurrency(invoice.total_amount)}</td>
+                <td className="numeric">{formatCurrency(invoice.amount_paid)}</td>
+                <td className={`numeric ${hasBalance ? "balance-due" : "balance-paid"}`}>
+                  {formatCurrency(invoice.balance_due)}
+                </td>
+              </tr>
             );
           })}
-        </tr>
-      </thead>
-      <tbody>
-        {invoices.map((invoice) => (
-          <tr key={invoice.invoice_id} data-status={invoice.status}>
-            <td>{invoice.invoice_id}</td>
-            <td>{invoice.customer_name}</td>
-            <td>{invoice.customer_email}</td>
-            <td>{invoice.country}</td>
-            <td>{invoice.status}</td>
-            <td>{invoice.invoice_date}</td>
-            <td>{invoice.due_date}</td>
-            <td className="numeric">{invoice.total_amount}</td>
-            <td className="numeric">{invoice.amount_paid}</td>
-            <td className="numeric">{invoice.balance_due}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+        </tbody>
+      </table>
+    </div>
   );
 }

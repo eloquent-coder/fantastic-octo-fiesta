@@ -50,9 +50,12 @@ export function App() {
 
   return (
     <main>
-      <h1>Invoice Ledger</h1>
+      <header className="app-header">
+        <h1>Invoice Ledger</h1>
+        <p className="subtitle">Outstanding and recent customer invoices</p>
+      </header>
       {error !== null && <p className="error">Error: {error}</p>}
-      {error === null && invoices === null && <p>Loading…</p>}
+      {error === null && invoices === null && <p className="loading">Loading…</p>}
       {error === null && invoices !== null && (
         <>
           <InvoiceFilters filters={filters} onChange={setFilters} />
