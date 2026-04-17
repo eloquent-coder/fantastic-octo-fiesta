@@ -7,6 +7,7 @@ services:
       - dbt-data:/app/data
     environment:
       - DBT_PROFILES_DIR=/app
+      - DUCKDB_PATH=/app/data/invoice_ledger.duckdb
 
   backend:
     build:
