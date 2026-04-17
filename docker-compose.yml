@@ -22,6 +22,7 @@ services:
         condition: service_completed_successfully
     environment:
       - DUCKDB_PATH=/app/data/invoice_ledger.duckdb
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:5173}
 
   frontend:
     build:
@@ -33,6 +34,7 @@ services:
       - backend
     environment:
       - API_PROXY_TARGET=http://backend:8000
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS:-}
 
 volumes:
   dbt-data:

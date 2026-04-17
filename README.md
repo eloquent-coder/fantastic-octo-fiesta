@@ -155,6 +155,57 @@ npx tsc --noEmit                     # the test: strict TS type-check
 | Frontend | `npx tsc --noEmit` (from `frontend/`)                              | Strict TS compilation — the contract is enforced at build time |
 | End-to-end | `curl http://127.0.0.1:5173/api/v1/invoices`                     | Full chain: DuckDB → FastAPI → Vite proxy → JSON response      |
 
+## Deploy to a Digital Ocean droplet (Ubuntu)
+
+The walking skeleton runs on any Docker-capable host with one command. The only change from local dev is pointing the allow-lists at the droplet's public origin.
+
+```bash
+# 1. Provision a droplet. Easiest: use Digital Ocean's "Docker" Marketplace image
+#    (Docker + Compose preinstalled). Otherwise:
+curl -fsSL https://get.docker.com | sh
+sudo usermod -aG docker $USER && newgrp docker
+
+# 2. Clone
+git clone <your-repo-url> invoice-ledger && cd invoice-ledger
+
+# 3. Tell the stack about the droplet's public address via a .env file
+cp .env.example .env
+# edit .env:
+#   CORS_ORIGINS=http://<DROPLET_IP>:5173
+#   ALLOWED_HOSTS=<DROPLET_IP>
+
+# 4. Open the firewall
+sudo ufw allow OpenSSH
+sudo ufw allow 5173/tcp
+sudo ufw --force enable
+
+# 5. Run
+docker compose up -d
+```
+
+Open `http://<DROPLET_IP>:5173` in a browser.
+
+### Caveats for public deployment
+
+- **Vite dev server is not production-grade.** Fine for a demo; for real traffic replace with `npm run build` + an nginx stage in [frontend/Dockerfile](frontend/Dockerfile).
+- **No HTTPS.** For a real demo, put Caddy in front (auto-LetsEncrypt) and point a domain at the droplet:
+  ```yaml
+  # add to docker-compose.yml
+  caddy:
+    image: caddy:2-alpine
+    ports: ["80:80", "443:443"]
+    volumes: [./Caddyfile:/etc/caddy/Caddyfile, caddy-data:/data]
+  ```
+  ```
+  # Caddyfile
+  your-domain.com {
+    handle /api/* { reverse_proxy backend:8000 }
+    handle       { reverse_proxy frontend:5173 }
+  }
+  ```
+  Then set `CORS_ORIGINS=https://your-domain.com` and `ALLOWED_HOSTS=your-domain.com`.
+- **DuckDB lives on the droplet's disk** in a named volume. Back it up with `docker volume` commands if it matters.
+
 ## What is deliberately **not** here
 
 - No auth, no caching, no pagination — the core three-layer story is the focus
