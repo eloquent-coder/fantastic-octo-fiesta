@@ -3,5 +3,5 @@ invoice_ledger:
   outputs:
     dev:
       type: duckdb
-      path: /app/data/invoice_ledger.duckdb
+      path: "{{ env_var('DUCKDB_PATH', './invoice_ledger.duckdb') }}"
       threads: 1

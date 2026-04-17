@@ -1,0 +1,68 @@
+version: 2
+
+models:
+  - name: int_invoices_enriched
+    description: Invoice headers enriched with canonical customer attributes via email join. One row per invoice. The customer_name here is the canonical name from stg_customers (the messy inline name from stg_invoices is discarded).
+    columns:
+      - name: invoice_id
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              arguments:
+                to: ref('stg_invoices')
+                field: invoice_id
+      - name: customer_id
+        tests:
+          - not_null
+      - name: customer_name
+        tests:
+          - not_null
+      - name: customer_email
+        tests:
+          - not_null
+      - name: total_amount
+        tests:
+          - not_null
+      - name: status
+        tests:
+          - not_null
+
+  - name: int_invoice_line_totals
+    description: Aggregated line item totals per invoice. One row per invoice that has at least one line item.
+    columns:
+      - name: invoice_id
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              arguments:
+                to: ref('stg_invoices')
+                field: invoice_id
+      - name: line_item_count
+        tests:
+          - not_null
+      - name: line_items_total
+        tests:
+          - not_null
+
+  - name: int_invoice_payments
+    description: Aggregated payments per invoice. One row per invoice that has at least one payment; unpaid invoices are absent here (use a LEFT JOIN in the mart).
+    columns:
+      - name: invoice_id
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              arguments:
+                to: ref('stg_invoices')
+                field: invoice_id
+      - name: payment_count
+        tests:
+          - not_null
+      - name: amount_paid
+        tests:
+          - not_null
+      - name: last_payment_date
+        tests:
+          - not_null

@@ -1,0 +1,62 @@
+line_item_id,invoice_id,description,quantity,unit_price,line_total
+LI-0001,INV-001,Consulting services,5,250.00,1250.00
+LI-0002,INV-002,Software license,1,840.00,840.00
+LI-0003,INV-003,Hardware procurement,2,1500.00,3000.00
+LI-0004,INV-003,shipping,1,100.50,100.50
+LI-0005,INV-004,Training session,1,475.00,475.00
+LI-0006,INV-005,Implementation services,10,200.00,2000.00
+LI-0007,INV-005,Setup fee,1,200.00,200.00
+LI-0008,INV-006,Support retainer,1,800.00,800.00
+LI-0009,INV-006,monthly hosting,1,150.75,150.75
+LI-0010,INV-007,Consulting services,20,250.00,5000.00
+LI-0011,INV-007,Documentation,1,800.00,800.00
+LI-0012,INV-007,TRAINING SESSION,1,500.00,500.00
+LI-0013,INV-008,Software license,2,840.00,1680.00
+LI-0014,INV-008,,1,120.00,120.00
+LI-0015,INV-009,Enterprise license,1,8000.00,8000.00
+LI-0016,INV-009,Hardware procurement,2,1500.00,3000.00
+LI-0017,INV-009,Implementation services,5,200.00,1000.00
+LI-0018,INV-009,Training session,1,500.00,500.00
+LI-0019,INV-010,Consulting services,15,250.00,3750.00
+LI-0020,INV-010,setup fee,1,1000.00,1000.00
+LI-0021,INV-011,Support retainer,1,890.00,890.00
+LI-0022,INV-012,Consulting services,5,250.00,1250.00
+LI-0023,INV-012,Documentation,1,325.00,325.00
+LI-0024,INV-013,SOFTWARE LICENSE,2,840.00,1680.00
+LI-0025,INV-013,Support retainer,1,660.00,660.00
+LI-0026,INV-014,Monthly hosting,4,275.00,1100.00
+LI-0027,INV-015,Hardware procurement,1,2500.00,2500.00
+LI-0028,INV-015,shipping,1,750.00,750.00
+LI-0029,INV-016,Enterprise license,1,6000.00,6000.00
+LI-0030,INV-016,Implementation services,10,200.00,2000.00
+LI-0031,INV-016,Training session,1,900.00,900.00
+LI-0032,INV-017,Consulting services,7,250.00,1750.00
+LI-0033,INV-017,,1,350.00,350.00
+LI-0034,INV-018,software license,4,840.00,3360.00
+LI-0035,INV-018,Support retainer,2,890.00,1780.00
+LI-0036,INV-018,Documentation,1,460.00,460.00
+LI-0037,INV-019,monthly hosting,1,720.00,720.00
+LI-0038,INV-020,Consulting services,6,250.00,1500.00
+LI-0039,INV-020,Setup fee,1,390.00,390.00
+LI-0040,INV-021,Hardware procurement,2,1500.00,3000.00
+LI-0041,INV-021,Training session,1,400.00,400.00
+LI-0042,INV-022,CONSULTING SERVICES,10,250.00,2500.00
+LI-0043,INV-022,Documentation,1,250.00,250.00
+LI-0044,INV-023,Enterprise license,1,8000.00,8000.00
+LI-0045,INV-023,Implementation services,20,200.00,4000.00
+LI-0046,INV-023,Hardware procurement,1,2000.00,2000.00
+LI-0047,INV-023,Training session,2,500.00,1000.00
+LI-0048,INV-024,Software license,1,840.00,840.00
+LI-0049,INV-024,Support retainer,1,500.00,500.00
+LI-0050,INV-025,Consulting services,14,250.00,3500.00
+LI-0051,INV-025,setup fee,1,700.00,700.00
+LI-0052,INV-026,monthly hosting,2,480.00,960.00
+LI-0053,INV-027,Enterprise license,1,6000.00,6000.00
+LI-0054,INV-027,Consulting services,4,250.00,1000.00
+LI-0055,INV-027,Documentation,1,800.00,800.00
+LI-0056,INV-028,Support retainer,1,1450.00,1450.00
+LI-0057,INV-029,Consulting services,10,250.00,2500.00
+LI-0058,INV-029,Hardware procurement,1,1000.00,1000.00
+LI-0059,INV-029,shipping,1,175.00,175.00
+LI-0060,INV-030,Software license,2,840.00,1680.00
+LI-0061,INV-030,,1,420.00,420.00

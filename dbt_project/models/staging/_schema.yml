@@ -1,0 +1,93 @@
+version: 2
+
+models:
+  - name: stg_customers
+    description: Canonical customers, keyed by customer_id. Email lowercased; one row per customer.
+    columns:
+      - name: customer_id
+        description: Unique customer identifier.
+        tests:
+          - not_null
+          - unique
+      - name: customer_email
+        description: Lowercased email; used as the natural join key from invoices.
+        tests:
+          - not_null
+          - unique
+      - name: customer_name
+      - name: country
+      - name: customer_since
+
+  - name: stg_invoices
+    description: Invoice headers with parsed dates and numeric total_amount. customer_name preserved as-is from source for audit; canonical name resolved in intermediate via customer_email.
+    columns:
+      - name: invoice_id
+        tests:
+          - not_null
+          - unique
+      - name: customer_email
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_customers')
+                field: customer_email
+      - name: invoice_date
+        tests:
+          - not_null
+      - name: due_date
+        tests:
+          - not_null
+      - name: total_amount
+        tests:
+          - not_null
+      - name: status
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['draft', 'sent', 'overdue']
+
+  - name: stg_invoice_line_items
+    description: Invoice line item detail. description may be NULL (legitimate).
+    columns:
+      - name: line_item_id
+        tests:
+          - not_null
+          - unique
+      - name: invoice_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_invoices')
+                field: invoice_id
+      - name: quantity
+        tests:
+          - not_null
+      - name: unit_price
+        tests:
+          - not_null
+      - name: line_total
+        tests:
+          - not_null
+
+  - name: stg_payments
+    description: Payment records; one row per payment. Multiple payments per invoice allowed.
+    columns:
+      - name: payment_id
+        tests:
+          - not_null
+          - unique
+      - name: invoice_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_invoices')
+                field: invoice_id
+      - name: amount
+        tests:
+          - not_null
+      - name: payment_date
+        tests:
+          - not_null

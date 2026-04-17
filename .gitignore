@@ -30,3 +30,6 @@ Thumbs.db
 .env
 
 project.txt
+
+.claude/
+.user.yml

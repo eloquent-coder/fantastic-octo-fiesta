@@ -1,0 +1,7 @@
+customer_id,customer_name,customer_email,country,customer_since
+CUST-001,Acme Corporation,alice@acme.com,US,2022-03-14
+CUST-002,Globex Inc.,bob@globex.com,US,2021-11-02
+CUST-003,Initech LLC,carol@initech.com,US,2023-01-20
+CUST-004,Umbrella Corporation,dave@umbrella.com,UK,2020-08-30
+CUST-005,Stark Industries,eve@stark.com,US,2019-05-10
+CUST-006,Wayne Enterprises,frank@wayne.com,US,2018-02-25

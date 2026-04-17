@@ -1,0 +1,66 @@
+version: 2
+
+models:
+  - name: mart_invoice_ledger
+    description: Query-ready invoice ledger. One row per invoice with canonical customer, computed totals, and balance due. This is the stable output contract consumed by the API.
+    columns:
+      - name: invoice_id
+        description: Unique invoice identifier.
+        tests:
+          - not_null
+          - unique
+      - name: customer_id
+        description: Canonical customer identifier.
+        tests:
+          - not_null
+      - name: customer_name
+        description: Canonical customer name (from customers dimension, not the messy inline invoice field).
+        tests:
+          - not_null
+      - name: customer_email
+        tests:
+          - not_null
+      - name: country
+        tests:
+          - not_null
+      - name: customer_since
+        tests:
+          - not_null
+      - name: invoice_date
+        tests:
+          - not_null
+      - name: due_date
+        tests:
+          - not_null
+      - name: status
+        description: Invoice lifecycle status.
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['draft', 'sent', 'overdue']
+      - name: total_amount
+        description: Invoice header total (source of truth; equals sum of line items by audit test).
+        tests:
+          - not_null
+      - name: line_item_count
+        description: Number of line items. Zero when no line items exist.
+        tests:
+          - not_null
+      - name: line_items_total
+        description: Sum of line_total across line items. Zero when no line items exist.
+        tests:
+          - not_null
+      - name: payment_count
+        description: Number of payments recorded. Zero when no payments exist.
+        tests:
+          - not_null
+      - name: amount_paid
+        description: Sum of all payments against this invoice. Zero when no payments exist.
+        tests:
+          - not_null
+      - name: last_payment_date
+        description: Most recent payment date; NULL when no payments exist.
+      - name: balance_due
+        description: total_amount minus amount_paid. Non-negative by audit test.
+        tests:
+          - not_null
