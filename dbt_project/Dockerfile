@@ -11,4 +11,4 @@ COPY dbt_project/tests/ ./tests/
 
 RUN mkdir -p /app/data
 
-CMD ["sh", "-c", "if [ -f /app/data/invoice_ledger.duckdb ]; then echo 'Mart already built at /app/data/invoice_ledger.duckdb. Skipping dbt build. Run \"docker compose down -v\" to force a rebuild.'; else dbt build; fi"]
+CMD ["sh", "-c", "if [ -f /app/data/invoice_ledger.duckdb ]; then echo 'Mart and docs already built. Skipping dbt build. Run \"docker compose down -v\" to force a rebuild.'; else dbt build && dbt docs generate && rm -rf /app/data/docs && cp -r target /app/data/docs; fi"]
