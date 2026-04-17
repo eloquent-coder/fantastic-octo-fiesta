@@ -24,6 +24,25 @@ services:
       - DUCKDB_PATH=/app/data/invoice_ledger.duckdb
       - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:5173}
 
+  dbt-docs:
+    build:
+      context: .
+      dockerfile: dbt_project/Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - dbt-data:/app/data
+    depends_on:
+      dbt:
+        condition: service_completed_successfully
+    environment:
+      - DBT_PROFILES_DIR=/app
+      - DUCKDB_PATH=/app/data/invoice_ledger.duckdb
+    command:
+      - sh
+      - -c
+      - "dbt docs generate && cd target && python -m http.server 8080 --bind 0.0.0.0"
+
   frontend:
     build:
       context: .

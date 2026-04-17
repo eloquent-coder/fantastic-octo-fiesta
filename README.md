@@ -23,6 +23,7 @@ Then:
 - **UI**: http://localhost:5173
 - **API**: http://localhost:8000/api/v1/invoices
 - **API docs** (Swagger): http://localhost:8000/docs
+- **dbt docs** (data pipeline DAG, column-level lineage, tests): http://localhost:8080
 
 Safe to run `docker compose up` repeatedly — the dbt container skips the build if the mart already exists. To force a fresh dbt run, wipe the volume first: `docker compose down -v`.
 
@@ -35,32 +36,36 @@ Safe to run `docker compose up` repeatedly — the dbt container skips the build
 │   messy)           │
 └─────────┬──────────┘
           │
-          ▼  (dbt-duckdb container, runs once)
+          ▼  (dbt container — one-shot, idempotent)
 ┌────────────────────┐
-│  staging/          │  clean + cast only (no business logic)
+│  1_staging/        │  clean + cast only (no business logic)
 │  stg_customers, stg_invoices, stg_invoice_line_items, stg_payments
 └─────────┬──────────┘
           │
           ▼
 ┌────────────────────┐
-│  intermediate/     │  joins + aggregations
+│  2_intermediate/   │  joins + aggregations
 │  int_invoices_enriched, int_invoice_line_totals, int_invoice_payments
 └─────────┬──────────┘
           │
           ▼
 ┌────────────────────┐
-│  marts/            │  stable query contract
+│  3_marts/          │  stable query contract (materialized table)
 │  mart_invoice_ledger   ◄──── THE API reads this as-is
 └─────────┬──────────┘
           │
+          ├──────────────►  dbt-docs container → http://localhost:8080
+          │                 (DAG, column lineage, test coverage)
           ▼  (read-only DuckDB connection, FastAPI container)
 ┌────────────────────┐
 │  GET /api/v1/invoices  →  list[Invoice]  (Pydantic)
+│  Swagger → http://localhost:8000/docs
 └─────────┬──────────┘
           │
           ▼  (Vite dev proxy, frontend container)
 ┌────────────────────┐
 │  React InvoiceList  ←  interface Invoice  (mirrors Pydantic 1:1)
+│  Filters / sort / pagination are pure UI state (no API changes)
 └────────────────────┘
 ```
 
@@ -69,28 +74,36 @@ Safe to run `docker compose up` repeatedly — the dbt container skips the build
 ```
 .
 ├── dbt_project/
-│   ├── seeds/                      Raw mock CSVs (4 files, intentionally dirty)
+│   ├── seeds/                          Raw mock CSVs (4 files, intentionally dirty)
 │   ├── models/
-│   │   ├── staging/                1:1 cleanup of sources
-│   │   ├── intermediate/           Joins, aggregations, canonical customer resolution
-│   │   └── marts/                  mart_invoice_ledger — the API's read target
-│   ├── tests/                      Singular audit tests (header==sum of lines, balance>=0)
-│   └── dbt_project.yml             Per-layer materialization + schema config
+│   │   ├── 1_staging/                  1:1 cleanup of sources (views)
+│   │   ├── 2_intermediate/             Joins, aggregations, canonical customer resolution (views)
+│   │   └── 3_marts/                    mart_invoice_ledger — the API's read target (table)
+│   ├── tests/                          Singular audit tests (header==sum of lines, balance>=0)
+│   └── dbt_project.yml                 Per-layer materialization + schema config
 ├── backend/
 │   ├── app/
-│   │   ├── models/invoice.py       Pydantic Invoice — THE contract
-│   │   ├── api/v1/invoices.py      GET /api/v1/invoices
-│   │   ├── db.py                   Read-only DuckDB via FastAPI lifespan
-│   │   └── main.py                 App + versioned router + CORS
-│   └── tests/test_contract.py      Field sets match mart exactly (catches drift)
+│   │   ├── models/invoice.py           Pydantic Invoice — THE contract
+│   │   ├── api/v1/invoices.py          GET /api/v1/invoices
+│   │   ├── db.py                       Read-only DuckDB via FastAPI lifespan
+│   │   └── main.py                     App + versioned router + CORS
+│   └── tests/test_contract.py          Field sets match mart exactly (catches drift)
 ├── frontend/
 │   └── src/
-│       ├── types/invoice.ts        TS interface mirroring Pydantic (strict TS == the test)
-│       ├── api/invoices.ts         Typed fetch
-│       ├── components/InvoiceList.tsx  Pure presentation
-│       └── App.tsx                 Loading / error / success tri-state
-├── docker-compose.yml              3 services: dbt (one-shot), backend, frontend
-└── CLAUDE.md                       Architectural principles (non-negotiable)
+│       ├── types/invoice.ts            TS interface mirroring Pydantic (strict TS == the test)
+│       ├── api/invoices.ts             Typed fetch
+│       ├── utils/
+│       │   ├── format.ts               Currency + date presentation helpers
+│       │   └── invoiceView.ts          Filter / sort / paginate pure functions + view types
+│       ├── components/
+│       │   ├── InvoiceList.tsx         Table with sortable headers (presentation only)
+│       │   ├── InvoiceFilters.tsx      Controlled filter inputs
+│       │   ├── Pagination.tsx          Prev/next with page indicator
+│       │   └── StatusBadge.tsx         Colored status pill
+│       └── App.tsx                     Orchestrates fetch + view state via useMemo chain
+├── docker-compose.yml                  4 services: dbt (one-shot), dbt-docs, backend, frontend
+├── .env.example                        Deploy-time overrides (CORS_ORIGINS, ALLOWED_HOSTS)
+└── CLAUDE.md                           Architectural principles (non-negotiable)
 ```
 
 ## Local development (without Docker)
@@ -112,7 +125,7 @@ python -m duckdb ./invoice_ledger.duckdb
 # > SELECT * FROM main_marts.mart_invoice_ledger LIMIT 5;
 ```
 
-Browse the DAG interactively: `dbt docs generate && dbt docs serve`.
+Browse the DAG interactively: `dbt docs generate && dbt docs serve` (or use the Dockerized dbt-docs container — already running at http://localhost:8080 when the stack is up).
 
 ### Backend
 
@@ -145,6 +158,7 @@ npx tsc --noEmit                     # the test: strict TS type-check
 - **Why are decimals serialized as strings over the wire?** Pydantic's `Decimal` → JSON string (default v2 behavior) preserves precision. Currency values never lose cents to float rounding. The TS side treats them as strings and displays directly.
 - **Why schema-drift test?** [backend/tests/test_contract.py](backend/tests/test_contract.py) asserts `set(mart_columns) == set(pydantic_fields)` exactly. If the mart gains a column OR Pydantic gains/drops one, the test surfaces it loudly.
 - **Why is the dbt container idempotent on re-run?** DuckDB doesn't allow writer + reader concurrency. Once the backend holds a read-only connection, dbt can't re-acquire a write lock. The container's `CMD` checks if the mart file exists and skips — `docker compose up` is now safe to run any number of times.
+- **Why are filter / sort / pagination client-side?** The API serves the full mart in one response. For 30 rows, client-side view state is trivially fast, keeps the backend as a pure pass-through ("never transforms data"), and avoids baking view concerns into the API contract. If the dataset later grows, migrating these to query params is mechanical. The view-state logic lives in [frontend/src/utils/invoiceView.ts](frontend/src/utils/invoiceView.ts) as pure functions, so components stay purely presentational.
 
 ## Testing each layer
 
@@ -177,6 +191,8 @@ cp .env.example .env
 # 4. Open the firewall
 sudo ufw allow OpenSSH
 sudo ufw allow 5173/tcp
+sudo ufw allow 8000/tcp   # optional: direct API access
+sudo ufw allow 8080/tcp   # optional: dbt docs
 sudo ufw --force enable
 
 # 5. Run
@@ -208,7 +224,9 @@ Open `http://<DROPLET_IP>:5173` in a browser.
 
 ## What is deliberately **not** here
 
-- No auth, no caching, no pagination — the core three-layer story is the focus
-- No ORM — DuckDB is read directly; adding SQLAlchemy would obscure the "backend just reads the mart" discipline
-- No runtime JSON validation on the frontend — the Pydantic server + strict TS contract make it redundant at this scale
-- No production build for the frontend — `npm run dev` in a container is sufficient for a walking skeleton
+- **No auth, no caching, no rate limiting** — the core three-layer story is the focus
+- **No server-side pagination / filtering / sorting** — view state lives on the client (30-row dataset). The API contract stays minimal: one GET, full payload, no query params.
+- **No ORM** — DuckDB is read directly; adding SQLAlchemy would obscure the "backend just reads the mart" discipline
+- **No runtime JSON validation on the frontend** — the Pydantic server + strict TS contract make it redundant at this scale
+- **No production build for the frontend** — `npm run dev` in a container is sufficient for a walking skeleton
+- **No CI** — local `dbt test`, `pytest`, and `tsc --noEmit` cover the same ground; wiring them into GitHub Actions is a mechanical next step
